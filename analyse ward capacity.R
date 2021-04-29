@@ -37,13 +37,12 @@ wards_imd_ruc %>%
   write_csv("output/Priority and exemplar wards - Healthier Lancashire and South Cumbria.csv")
 
 # Compare deprivation extent/proportion in priority vs exemplar wards
-wardsimd_ruc %>% 
+wards_imd_ruc %>% 
   ggplot(aes(x = Status, y = Extent)) +
   geom_boxplot()
 
-wardsimd_ruc %>% 
+wards_imd_ruc %>% 
   ggplot(aes(x = Status, y = Health_Extent)) +
   geom_boxplot()
-
 
 
