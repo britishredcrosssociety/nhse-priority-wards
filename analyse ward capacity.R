@@ -150,3 +150,21 @@ wards_analysis %>%
   theme_minimal()
 
 ggsave("output/housing deprivation.png", width = 75, height = 75, units = "mm")
+
+wards_analysis %>% 
+  ggplot(aes(x = Status, y = `Cheek by jowl?`)) +
+  geom_boxplot() +
+  # scale_y_continuous(labels = scales::percent) +
+  labs(x = NULL, y = "Barriers to Housing and Services") +
+  theme_minimal()
+
+wards_analysis %>% 
+  janitor::tabyl(`Cheek by jowl?`, Status)
+
+geographr::lookup_lsoa_ward %>% 
+  count(ward_code) %>% 
+  
+  ggplot(aes(x = n)) +
+  geom_histogram(binwidth = 1)
+
+
