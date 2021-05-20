@@ -3,8 +3,12 @@ library(geographr)
 library(sf)
 library(viridis)
 library(Hmisc)
+library(readxl)
 
 # ---- Load data ----
+wards <- read_excel("data/Priority and exemplar wards - Healthier Lancashire and South Cumbria.xlsx") %>% 
+  pull(`2019 ward code`)
+
 # IMD
 imd_wards <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data/English%20IMD%20-%20Ward%202020.csv")
 imd_lsoa <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data/UK%20IMD%20domains.csv")
@@ -102,7 +106,7 @@ wards_of_interest <- c(
   "E05004170"   # Passingford
 )
 
-for (ward_of_interest in wards_of_interest) {
+for (ward_of_interest in wards) {
   current_ward <- 
     ward_imd %>% 
     filter(ward_code == ward_of_interest)
