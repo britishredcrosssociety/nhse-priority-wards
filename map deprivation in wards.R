@@ -168,7 +168,7 @@ for (ward_of_interest in wards) {
       name = expression("IMD decile\n(1 = most deprived)"),
       alpha = 0.8, 
       discrete = TRUE, 
-      direction = -1,
+      direction = 1,
       drop = FALSE
     ) +
     
