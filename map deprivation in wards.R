@@ -10,13 +10,13 @@ wards <- read_excel("data/Priority and exemplar wards - Healthier Lancashire and
   pull(`2019 ward code`)
 
 # IMD
-imd_wards <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data/English%20IMD%20-%20Ward%202020.csv")
-imd_lsoa <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data/UK%20IMD%20domains.csv")
+imd_wards <- read_csv("https://raw.githubusercontent.com/matthewgthomas/IMD/master/data-raw/imd_england_ward.csv")
+imd_lsoa <- read_csv("https://raw.githubusercontent.com/matthewgthomas/IMD/master/data-raw/imd_england_lsoa.csv")
 
 # Calculate IMD deciles for wards
 imd_wards_subset <- 
   imd_wards %>% 
-  select(ward_code = WD20CD, Score, Extent) %>% 
+  select(ward_code, Score, Extent) %>% 
   mutate(Score_rank = rank(Score)) %>% 
   mutate(Score_decile = 11 - as.integer(cut2(Score_rank, g = 10)))
 
@@ -30,7 +30,7 @@ ward_imd <-
 lsoa_imd <- 
   geographr::boundaries_lsoa %>% 
   filter(str_detect(lsoa_code, "^E")) %>% 
-  left_join(imd_lsoa, by = c("lsoa_code" = "LSOA"))
+  left_join(imd_lsoa, by = "lsoa_code")
 
 n_lsoas_in_wards <- 
   geographr::lookup_lsoa_ward %>% 
