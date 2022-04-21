@@ -25,21 +25,12 @@ ruc_wards <- geographr::ruc_england_wales_ward %>%
   filter(str_detect(ward_code, "^E"))
 
 # IMD
-imd_wards <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data/English%20IMD%20-%20Ward%202020.csv")
-imd_lsoa <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data/UK%20IMD%20domains.csv")
+imd_wards <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data-raw/imd_england_ward.csv")
+imd_lsoa <- read_csv("https://github.com/matthewgthomas/IMD/raw/master/data-raw/imd_england_lsoa.csv")
 
 # ---- Community Needs Index ----
-# Commenting this section out because CNI is currently for 2017 ward codes and doesn't align to 2019/2020 codes
-
-# Load Community Needs Index ranks from British Red Cross Vulnerability Index
-# cni <- read_csv("https://github.com/britishredcrosssociety/covid-19-vulnerability/raw/master/data/community-needs-ward.csv")
-# 
-# cni <- 
-#   cni %>% 
-#   left_join(ward_names, by = c("Code" = "WD17CD"))
-# 
-# wards %>% 
-#   left_join(cni, by = c("2019 ward code" = "Code"))
+# Load ranks from British Red Cross Vulnerability Index
+cni <- read_csv("https://github.com/britishredcrosssociety/covid-19-vulnerability/raw/master/data/community-needs-ward.csv")
 
 # ---- Digital exclusion ----
 digital_ward <- read_csv("https://github.com/britishredcrosssociety/covid-19-vulnerability/raw/master/data/CACI/digital-exclusion-ward.csv")
@@ -85,10 +76,10 @@ capacity_ward <-
 # ---- Check by jowl analysis of deprivation in wards ----
 cheek_by_jowl <- 
   imd_lsoa %>% 
-  filter(str_detect(LSOA, "^E")) %>% 
-  select(LSOA, IMD_decile) %>% 
+  filter(str_detect(lsoa_code, "^E")) %>% 
+  select(lsoa_code, IMD_decile) %>% 
   
-  left_join(geographr::lookup_lsoa_ward, by = c("LSOA" = "lsoa_code")) %>% 
+  left_join(geographr::lookup_lsoa_ward, by = c("lsoa_code")) %>% 
   
   mutate(highest_deprivation = ifelse(IMD_decile <= 2, 1, 0),
          lowest_deprivation  = ifelse(IMD_decile >= 9, 1, 0)) %>%
@@ -104,7 +95,8 @@ cheek_by_jowl <-
 
 # ---- Join everything ----
 wards_analysis <- wards %>% 
-  left_join(imd_wards, by = c("2019 ward code" = "WD20CD")) %>% 
+  left_join(imd_wards, by = c("2019 ward code" = "ward_code")) %>% 
+  left_join(cni, by = c("2019 ward code" = "Code")) %>% 
   left_join(cheek_by_jowl, by = c("2019 ward code" = "ward_code")) %>%
   left_join(digital_ward, by = c("2019 ward code" = "WD20CD")) %>% 
   left_join(financial_ward, by = c("2019 ward code" = "WD20CD")) %>% 
@@ -167,4 +159,19 @@ geographr::lookup_lsoa_ward %>%
   ggplot(aes(x = n)) +
   geom_histogram(binwidth = 1)
 
+# ---- Association between priority/exemplar wards and left-behind areas/wards ----
+wards_analysis %>% 
+  filter(!is.na(`Left behind area?`)) %>% 
+  
+  ggplot(aes(x = Status, y = `Community Needs Index rank`)) +
+  geom_violin() +
+  geom_jitter(alpha = 0.2)
 
+library(janitor)
+
+wards_analysis %>% 
+  filter(!is.na(`Left behind area?`)) %>% 
+  tabyl(Status, `Left behind area?`) %>% 
+  adorn_percentages("row")
+
+summary(glm(`Left behind area?` ~ Status, data = wards_analysis))
